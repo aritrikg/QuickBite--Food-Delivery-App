@@ -2,7 +2,14 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js"
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// lazy Stripe initializer — supports STRIPE_SECRET_KEY or legacy STRIPE_KEY
+function getStripe() {
+    const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_KEY;
+    if (!key) {
+        throw new Error('Stripe key is not set. Set STRIPE_SECRET_KEY in your .env or environment.');
+    }
+    return new Stripe(key);
+}
 
 // Placing user order
 const placeOrder = async (req,res) => {
@@ -31,6 +38,9 @@ const placeOrder = async (req,res) => {
             quantity: item.quantity
         }))
 
+        // get Stripe client here (inside request handling)
+        const stripe = getStripe();
+
         line_items.push({
             price_data:{
                 currency: "INR",
@@ -42,7 +52,6 @@ const placeOrder = async (req,res) => {
             quantity: 1
         })
 
-       
         const session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode:'payment',
@@ -53,7 +62,7 @@ const placeOrder = async (req,res) => {
         res.json({success:true, session_url:session.url})
     } catch(error){
         console.log(error)
-        res.json({success: false,message: error})
+        res.status(500).json({success: false, message: error.message || error})
     }
 }
 
