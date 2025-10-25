@@ -30,7 +30,7 @@ This repository contains three main folders:
 
 #### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/QuickBite.git
+git clone https://github.com/aritrikg/QuickBite--Food-Delivery-App.git
 ```
 Or download the zip file and extract it.
 
